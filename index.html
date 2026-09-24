@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>梅花易数</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #c0b8a8;
+            font-family: 'Courier New', 'Consolas', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: #11111a;
+            border: 2px solid #2a2218;
+            padding: 24px 20px 28px;
+        }
+
+        .main-title {
+            text-align: center;
+            font-size: 26px;
+            font-weight: normal;
+            letter-spacing: 6px;
+            color: #b8a88a;
+            border-bottom: 2px solid #2a2218;
+            padding-bottom: 12px;
+            margin-bottom: 22px;
+            font-family: 'Georgia', serif;
+        }
+        .main-title small {
+            display: block;
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: #6a5a42;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #6a5a42;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .step-title {
+            font-size: 20px;
+            font-weight: normal;
+            color: #d8d0c0;
+            margin-bottom: 16px;
+            font-family: 'Georgia', serif;
+        }
+        .step-desc {
+            font-size: 14px;
+            color: #9a8e7a;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0e0e16;
+            border: 2px solid #2a2218;
+            color: #d8d0c0;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+        input:focus {
+            border-color: #6a5a42;
+        }
+        input::placeholder {
+            color: #4a3e2e;
+            font-size: 15px;
+        }
+        .input-hint {
+            font-size: 12px;
+            color: #5a4a3a;
+            margin-top: 4px;
+        }
+
+        .btn-row {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 24px;
+            background: #1a1a24;
+            border: 2px solid #3a2e1e;
+            color: #c0b8a8;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+        .btn:hover:not(:disabled) {
+            background: #2a2218;
+            border-color: #6a5a42;
+            color: #e0d8c8;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: default;
+            background: #1a1a24;
+            border-color: #2a2218;
+            color: #5a4a3a;
+        }
+        .btn-primary {
+            background: #1e1a14;
+            border-color: #6a5a42;
+            color: #d0c8b8;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #2a2218;
+            border-color: #8a7a5a;
+        }
+        .btn-secondary {
+            border-color: #3a2e1e;
+        }
+
+        .progress-wrap {
+            margin: 24px 0 16px;
+        }
+        .progress-track {
+            width: 100%;
+            height: 4px;
+            background: #0a0a0f;
+            border: 1px solid #2a2218;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #8a7a5a;
+        }
+
+        .progress-logs {
+            margin-top: 14px;
+            min-height: 160px;
+            background: #0a0a0f;
+            border: 1px solid #1a1a1a;
+            padding: 12px 16px;
+            font-size: 13px;
+            line-height: 1.9;
+            color: #9a8e7a;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .progress-logs .log-line {
+            opacity: 0;
+            animation: logAppear 0.15s ease forwards;
+        }
+        .progress-logs .log-line.highlight {
+            color: #c8b898;
+        }
+        .progress-logs .log-line.dim {
+            color: #4a3e2e;
+        }
+        @keyframes logAppear {
+            0% { opacity: 0; transform: translateX(-4px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        .progress-pct {
+            text-align: right;
+            font-size: 12px;
+            color: #5a4a3a;
+            margin-top: 2px;
+            letter-spacing: 1px;
+        }
+
+        .result-card {
+            background: #0e0e16;
+            border: 2px solid #1e1a14;
+            padding: 16px 18px;
+            margin-top: 10px;
+        }
+        .result-card .label {
+            font-size: 11px;
+            color: #5a4a3a;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .result-card .value {
+            font-size: 18px;
+            color: #d8d0c0;
+            font-family: 'Georgia', serif;
+            margin-bottom: 8px;
+        }
+        .result-card .value-mono {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #1a1a1a;
+            margin: 14px 0;
+        }
+
+        .bagua-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 12px 0 8px;
+        }
+        .bagua-lines {
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            line-height: 1.7;
+            letter-spacing: 2px;
+            color: #c0b8a8;
+            text-align: center;
+        }
+        .bagua-lines .line {
+            display: block;
+            padding: 0 6px;
+        }
+        .bagua-lines .line.dong {
+            color: #d4a040;
+            font-weight: bold;
+        }
+        .bagua-lines .line.dong::after {
+            content: ' ◆';
+            color: #d4a040;
+            font-size: 14px;
+        }
+        .bagua-lines .line-label {
+            font-size: 11px;
+            color: #4a3e2e;
+            display: inline-block;
+            width: 24px;
+            text-align: right;
+            margin-right: 4px;
+        }
+        .bagua-label {
+            font-size: 12px;
+            color: #6a5a42;
+            margin-top: 4px;
+            letter-spacing: 2px;
+        }
+        .bagua-label strong {
+            color: #b8a88a;
+            font-weight: normal;
+        }
+        .bagua-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin: 4px 0 2px;
+        }
+        .bagua-col .name {
+            font-size: 13px;
+            color: #6a5a42;
+            margin-top: 2px;
+            letter-spacing: 1px;
+        }
+
+        .bian-inline {
+            display: none;
+            margin-top: 6px;
+        }
+        .bian-inline.visible {
+            display: block;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+        .btn-group .btn {
+            flex: 1 1 auto;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .error-msg {
+            color: #b04030;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+        .error-msg.show {
+            display: block;
+        }
+
+        @media (max-width: 560px) {
+            .container { padding: 14px 12px 18px; }
+            .main-title { font-size: 20px; letter-spacing: 4px; }
+            .step-title { font-size: 17px; }
+            input { font-size: 16px; padding: 8px 12px; }
+            .bagua-lines { font-size: 17px; }
+            .btn { padding: 6px 16px; font-size: 14px; }
+            .result-card .value { font-size: 16px; }
+            .progress-logs { font-size: 12px; padding: 8px 12px; min-height: 120px; }
+            .bagua-row { gap: 16px; }
+            .btn-group .btn { min-width: 80px; }
+        }
+        @media (max-width: 400px) {
+            .container { padding: 10px 8px 14px; }
+            .main-title { font-size: 18px; letter-spacing: 2px; }
+            .bagua-lines { font-size: 15px; line-height: 1.5; }
+            .btn { padding: 4px 12px; font-size: 13px; }
+            .btn-group .btn { min-width: 70px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+
+    <div class="main-title">
+        梅花易数
+        <small>· 观象知机 ·</small>
+    </div>
+
+    <div class="step active" data-step="0">
+        <div class="step-title">问天机 · 决疑惑</div>
+        <div class="step-desc">
+            心中默念所问之事，依次取三个数字（1~99），
+            依数成卦，观爻知机。
+        </div>
+        <div class="step-desc" style="font-size:13px;color:#6a5a42;">
+            事各有数，易为君子者卜，趋吉避凶，当循道枢。<br>
+            一卦一问，诚心则灵。今日一卦，不再复占。<br>
+            <span id="limitHint" style="color:#5a4a3a;"></span>
+        </div>
+        <div class="btn-row flex-center" style="justify-content:center; margin-top:24px;">
+            <button class="btn btn-primary" onclick="goStep(1)">占一卦</button>
+        </div>
+    </div>
+
+    <div class="step" data-step="1">
+        <div class="step-label">第一步 · 立心</div>
+        <div class="step-title">你所问何事？</div>
+        <div class="step-desc">请用一句话描述你心中所惑。</div>
+        <input type="text" id="inputQuestion" placeholder="例：我该不该接受这份工作？" maxlength="120" />
+        <div class="input-hint">简明扼要，一卦一问</div>
+        <div class="error-msg" id="errQuestion">请填写你所问之事。</div>
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="goStep(0)">← 返回</button>
+            <button class="btn btn-primary" onclick="submitQuestion()">下一步 →</button>
+        </div>
+    </div>
+
+    <div class="step" data-step="2">
+        <div class="step-label">第二步 · 取数 1/3</div>
+        <div class="step-title">第一个数字</div>
+        <div class="step-desc">心中默念所问之事，随意想一个 1~99 的数字。</div>
+        <input type="number" id="inputA" min="1" max="99" placeholder="1 ~ 99" />
+        <div class="input-hint">整数，范围 1 到 99</div>
+        <div class="error-msg" id="errA">请输入 1~99 的有效数字。</div>
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="goStep(1)">← 返回</button>
+            <button class="btn btn-primary" onclick="submitA()">下一步 →</button>
+        </div>
+    </div>
+
+    <div class="step" data-step="3">
+        <div class="step-label">第三步 · 取数 2/3</div>
+        <div class="step-title">第二个数字</div>
+        <div class="step-desc">再随意想一个 1~99 的数字，作为第二个数。</div>
+        <input type="number" id="inputB" min="1" max="99" placeholder="1 ~ 99" />
+        <div class="input-hint">整数，范围 1 到 99</div>
+        <div class="error-msg" id="errB">请输入 1~99 的有效数字。</div>
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="goStep(2)">← 返回</button>
+            <button class="btn btn-primary" onclick="submitB()">下一步 →</button>
+        </div>
+    </div>
+
+    <div class="step" data-step="4">
+        <div class="step-label">第四步 · 取数 3/3</div>
+        <div class="step-title">第三个数字</div>
+        <div class="step-desc">再随意想一个 1~99 的数字，作为第三个数。</div>
+        <input type="number" id="inputC" min="1" max="99" placeholder="1 ~ 99" />
+        <div class="input-hint">整数，范围 1 到 99</div>
+        <div class="error-msg" id="errC">请输入 1~99 的有效数字。</div>
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="goStep(3)">← 返回</button>
+            <button class="btn btn-primary" onclick="submitC()">开始推演 →</button>
+        </div>
+    </div>
+
+    <div class="step" data-step="5">
+        <div class="step-label">演算中 · 请静候</div>
+        <div class="step-title">以数成卦</div>
+        <div class="progress-wrap">
+            <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="progress-pct" id="progressPct">0%</div>
+        </div>
+        <div class="progress-logs" id="progressLogs"><div class="log-line dim">· 起卦 ...</div></div>
+        <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-secondary" id="btnCalcBack" onclick="goStep(4)" disabled>← 返回</button>
+            <button class="btn btn-primary" id="btnCalcNext" disabled>计算中 ...</button>
+        </div>
+    </div>
+
+    <div class="step" data-step="6">
+        <div class="step-label">占卜结果</div>
+        <div class="step-title" id="resultTitle">卦象已显</div>
+        <div class="result-card" id="resultCard">
+            <div class="label">所问</div>
+            <div class="value" id="resultQuestion" style="font-size:16px;font-family:'Courier New',monospace;">—</div>
+            <hr class="divider" />
+            <div class="label">本卦</div>
+            <div class="value" id="resultGuaName">—</div>
+            <div class="label">卦意</div>
+            <div class="value" id="resultGuaMeaning" style="font-size:16px;">—</div>
+            <hr class="divider" />
+            <div class="label">动爻 · 第 <span id="resultDongYaoNum">—</span> 爻</div>
+            <div class="value" id="resultDongYaoAdvice" style="font-size:16px;">—</div>
+            <hr class="divider" />
+            <div class="label">卦象图</div>
+            <div class="bagua-display" id="resultBagua"></div>
+            <hr class="divider" />
+            <div class="label">综合解读</div>
+            <div class="value" id="resultSummary" style="font-size:16px;font-weight:normal;line-height:1.6;">—</div>
+            <div id="bianInline" class="bian-inline">
+                <hr class="divider" />
+                <div class="label">变卦</div>
+                <div class="value" id="bianGuaName">—</div>
+                <div class="label">变卦意</div>
+                <div class="value" id="bianGuaMeaning" style="font-size:16px;">—</div>
+                <hr class="divider" />
+                <div class="label">变卦图</div>
+                <div class="bagua-display" id="bianBagua"></div>
+                <hr class="divider" />
+                <div class="label">最终趋势</div>
+                <div class="value" id="bianSummary" style="font-size:16px;font-weight:normal;line-height:1.6;">—</div>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="resetAll()">另起一卦</button>
+            <button class="btn btn-primary" id="btnShowBian" onclick="showBianGua()">推演变卦</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const TRIGRAMS = {
+        1: ['━━━','━━━','━━━'], 2: ['━ ━','━━━','━━━'],
+        3: ['━━━','━ ━','━━━'], 4: ['━ ━','━ ━','━━━'],
+        5: ['━━━','━━━','━ ━'], 6: ['━ ━','━━━','━ ━'],
+        7: ['━━━','━ ━','━ ━'], 8: ['━ ━','━ ━','━ ━']
+    };
+    const TRIGRAM_NAMES = {1:'天',2:'泽',3:'火',4:'雷',5:'风',6:'水',7:'山',8:'地'};
+    const GUA_MAP = {
+        1:{1:'乾',2:'履',3:'同人',4:'无妄',5:'姤',6:'讼',7:'遁',8:'否'},
+        2:{1:'夬',2:'兑',3:'革',4:'随',5:'大过',6:'困',7:'咸',8:'萃'},
+        3:{1:'大有',2:'睽',3:'离',4:'噬嗑',5:'鼎',6:'未济',7:'旅',8:'晋'},
+        4:{1:'大壮',2:'归妹',3:'丰',4:'震',5:'恒',6:'解',7:'小过',8:'豫'},
+        5:{1:'小畜',2:'中孚',3:'家人',4:'益',5:'巽',6:'涣',7:'渐',8:'观'},
+        6:{1:'需',2:'节',3:'既济',4:'屯',5:'井',6:'坎',7:'蹇',8:'比'},
+        7:{1:'大畜',2:'损',3:'贲',4:'颐',5:'蛊',6:'蒙',7:'艮',8:'剥'},
+        8:{1:'泰',2:'临',3:'明夷',4:'复',5:'升',6:'师',7:'谦',8:'坤'}
+    };
+    const GUA_MEANING = {
+        '乾':'极阳刚健，宜主动出击','坤':'极阴柔顺，宜包容等待','屯':'万事开头难，宜稳扎稳打',
+        '蒙':'蒙昧未开，宜虚心求学','需':'需耐心等待时机','讼':'有争执，宜退让避祸',
+        '师':'团队作战，宜集众人之力','比':'亲密比附，宜结盟合作','小畜':'小有积蓄，不宜冒进',
+        '履':'如履薄冰，宜谨慎行事','泰':'通泰顺畅，万事吉利','否':'闭塞不通，宜隐忍守成',
+        '同人':'志同道合，宜团结他人','大有':'大丰收，宜慷慨布施','谦':'谦虚受益，宜低调做人',
+        '豫':'豫乐安逸，宜未雨绸缪','随':'随顺从众，宜见机行事','蛊':'积弊已久，宜革新除害',
+        '临':'临事亲民，宜主动作为','观':'观察审视，宜冷静旁观','噬嗑':'有障碍阻隔，宜果断破除',
+        '贲':'修饰外表，宜注重内在','剥':'剥落衰败，宜顺势退守','复':'一阳复始，宜重新开始',
+        '无妄':'不妄为，宜顺其自然','大畜':'大积蓄，宜厚积薄发','颐':'颐养身心，宜自食其力',
+        '大过':'过度至极，宜急转弯调整','坎':'险陷重重，宜沉着应对','离':'光明依附，宜保持热情',
+        '咸':'感应相通，宜主动交流','恒':'恒久稳定，宜持之以恒','遁':'退避隐退，宜暂时撤退',
+        '大壮':'强盛壮大，宜适可而止','晋':'晋升前进，宜光明正大','明夷':'光明受伤，宜隐忍保身',
+        '家人':'家庭和睦，宜以家为重','睽':'乖离矛盾，宜求同存异','蹇':'艰难险阻，宜知难而退',
+        '解':'困难解除，宜趁势而为','损':'减损自己，宜舍小取大','益':'增益受益，宜广结善缘',
+        '夬':'决断果敢，宜当机立断','姤':'不期而遇，宜谨慎应对','萃':'聚集荟萃，宜团结一心',
+        '升':'上升进步，宜顺势向上','困':'困顿窘迫，宜守正待时','井':'井井有条，宜按部就班',
+        '革':'变革改革，宜破旧立新','鼎':'鼎立创新，宜树立新规','震':'震动惊惧，宜临危不乱',
+        '艮':'停止不动，宜知止不殆','渐':'循序渐进，宜按步骤来','归妹':'嫁女归去，宜顺其自然',
+        '丰':'丰盛盈满，宜戒骄戒躁','旅':'旅行在外，宜灵活应变','巽':'谦逊顺入，宜以退为进',
+        '兑':'喜悦快乐，宜真诚待人','涣':'涣散分离，宜重新聚合','节':'节制节约，宜适可而止',
+        '中孚':'诚信感化，宜以诚待人','小过':'小有超过，宜谨慎微调','既济':'事已成就，宜守成防变',
+        '未济':'事未完成，宜继续努力'
+    };
+    const DONG_ADVICE = {
+        1:'根基动摇，宜返初心',
+        2:'搭档为要，择人贵于择事',
+        3:'方法阻滞，当易辙而行',
+        4:'转折关头，慎思以决',
+        5:'大势将变，宜观时待机',
+        6:'结局已定，顺势而安'
+    };
+
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : null;
+    }
+    function setCookie(name, value, days) {
+        const expires = days ? `; expires=${new Date(Date.now()+days*86400000).toUTCString()}` : '';
+        document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/';
+    }
+
+    function checkLimits(question) {
+        const dailyStr = getCookie('meihua_daily');
+        let daily = dailyStr ? JSON.parse(dailyStr) : { date: '', count: 0 };
+        const today = new Date().toISOString().slice(0,10);
+        if (daily.date === today && daily.count >= 3) {
+            return { ok: false, msg: '今日已起卦三次，请明日再试。' };
+        }
+        const questionsStr = getCookie('meihua_questions');
+        let questions = questionsStr ? JSON.parse(questionsStr) : [];
+        const thirtyDaysAgo = Date.now() - 30*24*3600*1000;
+        for (let item of questions) {
+            if (item.q === question && item.ts > thirtyDaysAgo) {
+                return { ok: false, msg: '此问三十日内已占，请静待时日。' };
+            }
+        }
+        return { ok: true };
+    }
+
+    function recordGua(question) {
+        const dailyStr = getCookie('meihua_daily');
+        let daily = dailyStr ? JSON.parse(dailyStr) : { date: '', count: 0 };
+        const today = new Date().toISOString().slice(0,10);
+        if (daily.date !== today) {
+            daily.date = today;
+            daily.count = 1;
+        } else {
+            daily.count++;
+        }
+        setCookie('meihua_daily', JSON.stringify(daily), 365);
+
+        const questionsStr = getCookie('meihua_questions');
+        let questions = questionsStr ? JSON.parse(questionsStr) : [];
+        questions.push({ q: question, ts: Date.now() });
+        const cutoff = Date.now() - 30*24*3600*1000;
+        questions = questions.filter(item => item.ts > cutoff);
+        setCookie('meihua_questions', JSON.stringify(questions), 365);
+    }
+
+    function updateLimitHint() {
+        const hint = document.getElementById('limitHint');
+        const dailyStr = getCookie('meihua_daily');
+        let daily = dailyStr ? JSON.parse(dailyStr) : { date: '', count: 0 };
+        const today = new Date().toISOString().slice(0,10);
+        let remain = 3;
+        if (daily.date === today) remain = 3 - daily.count;
+        if (remain < 0) remain = 0;
+        hint.textContent = `今日卜筮之数余： ${remain} `;
+    }
+
+    let state = {
+        step: 0,
+        question: '',
+        A: null, B: null, C: null,
+        A_simp: null, B_simp: null, C_simp: null,
+        guaName: '', guaMeaning: '', dongYao: null,
+        bianGuaName: '', bianGuaMeaning: '',
+        bianCalculated: false,
+        bianA: null, bianB: null,
+    };
+
+    const $ = id => document.getElementById(id);
+    const steps = document.querySelectorAll('.step');
+
+    function goStep(n) {
+        document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+        if (state.step === 5 && n !== 6) return;
+        state.step = n;
+        steps.forEach(el => el.classList.toggle('active', parseInt(el.dataset.step) === n));
+        if (n === 6) renderResult();
+        if (n === 0) updateLimitHint();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function submitQuestion() {
+        const val = $('inputQuestion').value.trim();
+        if (!val) { $('errQuestion').classList.add('show'); return; }
+        state.question = val;
+        goStep(2);
+    }
+    function submitA() {
+        const val = parseInt($('inputA').value);
+        if (isNaN(val) || val<1 || val>99) { $('errA').classList.add('show'); return; }
+        state.A = val;
+        goStep(3);
+    }
+    function submitB() {
+        const val = parseInt($('inputB').value);
+        if (isNaN(val) || val<1 || val>99) { $('errB').classList.add('show'); return; }
+        state.B = val;
+        goStep(4);
+    }
+    function submitC() {
+        const val = parseInt($('inputC').value);
+        if (isNaN(val) || val<1 || val>99) { $('errC').classList.add('show'); return; }
+        state.C = val;
+
+        const check = checkLimits(state.question);
+        if (!check.ok) {
+            alert(check.msg);
+            return;
+        }
+
+        recordGua(state.question);
+
+        goStep(5);
+        startCalculation();
+    }
+
+    function startCalculation() {
+        const bar = $('progressBar');
+        const pct = $('progressPct');
+        const logs = $('progressLogs');
+        const btnBack = $('btnCalcBack');
+        const btnNext = $('btnCalcNext');
+
+        btnBack.disabled = true;
+        btnNext.disabled = true;
+        btnNext.textContent = '演算中 ...';
+        logs.innerHTML = '';
+
+        const A_raw = state.A, B_raw = state.B, C_raw = state.C;
+        const stepsData = [];
+
+        stepsData.push({ pct: 5, msg: `起数：${A_raw}、${B_raw}、${C_raw}` });
+        const naJia = {1:'甲',2:'乙',3:'丙',4:'丁',5:'戊',6:'己',7:'庚',8:'辛'};
+        const na = naJia[A_raw%8+1] || '癸';
+        stepsData.push({ pct: 12, msg: `纳甲：上卦纳${na}，下卦纳${na}` });
+        const guaGong = {1:'乾宫',2:'兑宫',3:'离宫',4:'震宫',5:'巽宫',6:'坎宫',7:'艮宫',8:'坤宫'};
+        const gong = guaGong[(A_raw+B_raw)%8+1] || '中宫';
+        stepsData.push({ pct: 22, msg: `定宫：卦属${gong}` });
+
+        let aVal = A_raw, aCnt=0;
+        while (aVal > 8) { aVal -= 8; aCnt++; }
+        const aFinal = aVal;
+        let aMsg = `上卦气数，过八则除`;
+        if (aCnt===0) aMsg += `，原数未过，为${aFinal}`;
+        else aMsg += `，除${aCnt}次，余${aFinal}`;
+        stepsData.push({ pct: 38, msg: aMsg });
+
+        let bVal = B_raw, bCnt=0;
+        while (bVal > 8) { bVal -= 8; bCnt++; }
+        const bFinal = bVal;
+        let bMsg = `下卦气数，过八则除`;
+        if (bCnt===0) bMsg += `，原数未过，为${bFinal}`;
+        else bMsg += `，除${bCnt}次，余${bFinal}`;
+        stepsData.push({ pct: 52, msg: bMsg });
+
+        let cVal = C_raw, cCnt=0;
+        while (cVal > 6) { cVal -= 6; cCnt++; }
+        if (cVal === 0) cVal = 6;
+        const cFinal = cVal;
+        let cMsg = `动爻气数，过六则除`;
+        if (cCnt===0 && C_raw<=6) cMsg += `，原数未过，为${cFinal}`;
+        else if (C_raw%6===0) cMsg += `，除尽归六，为六`;
+        else cMsg += `，除${cCnt}次，余${cFinal}`;
+        stepsData.push({ pct: 66, msg: cMsg });
+
+        const shiYing = {1:'世',2:'应',3:'世',4:'应',5:'世',6:'应'};
+        const sy = shiYing[cFinal%6+1] || '世';
+        stepsData.push({ pct: 78, msg: `安世应：${sy}爻动` });
+
+        const guaName = GUA_MAP[aFinal]?.[bFinal] || '?';
+        const upperName = TRIGRAM_NAMES[aFinal] || '?';
+        const lowerName = TRIGRAM_NAMES[bFinal] || '?';
+        stepsData.push({
+            pct: 90,
+            msg: `合上下卦：上${aFinal}（${upperName}）下${bFinal}（${lowerName}） → ${guaName}卦`
+        });
+        const shen = ['青龙','白虎','朱雀','玄武','勾陈','螣蛇'];
+        stepsData.push({ pct: 96, msg: `飞伏：伏神临${shen[(A_raw+B_raw+C_raw)%6]}` });
+        stepsData.push({ pct: 100, msg: `演竟，本卦${guaName}` });
+
+        state.A_simp = aFinal;
+        state.B_simp = bFinal;
+        state.C_simp = cFinal;
+        state.guaName = guaName;
+        state.guaMeaning = GUA_MEANING[guaName] || '未知卦意';
+        state.dongYao = cFinal;
+
+        let idx = 0;
+        const total = stepsData.length;
+        function nextLog() {
+            if (idx >= total) {
+                btnBack.disabled = false;
+                btnNext.disabled = false;
+                btnNext.textContent = '查看结果 →';
+                btnNext.onclick = function() { goStep(6); };
+                return;
+            }
+            const data = stepsData[idx];
+            bar.style.width = data.pct + '%';
+            pct.textContent = data.pct + '%';
+            const line = document.createElement('div');
+            line.className = 'log-line highlight';
+            line.textContent = '· ' + data.msg;
+            logs.appendChild(line);
+            logs.scrollTop = logs.scrollHeight;
+            idx++;
+            setTimeout(nextLog, 500);
+        }
+        logs.innerHTML = '<div class="log-line dim">· 起卦 ...</div>';
+        setTimeout(() => { logs.innerHTML = ''; nextLog(); }, 400);
+    }
+
+    function renderResult() {
+        const q = state.question || '（未记录）';
+        $('resultQuestion').textContent = q;
+        const guaName = state.guaName || '?';
+        $('resultGuaName').textContent = guaName + '卦';
+        $('resultGuaMeaning').textContent = state.guaMeaning || '—';
+        const dong = state.dongYao || 0;
+        $('resultDongYaoNum').textContent = dong;
+        $('resultDongYaoAdvice').textContent = DONG_ADVICE[dong] || '—';
+        $('resultSummary').textContent = `${state.guaMeaning}。${DONG_ADVICE[dong]||''}`;
+        const a = state.A_simp || 1, b = state.B_simp || 1;
+        $('resultBagua').innerHTML = buildBaguaHTML(a, b, dong);
+        $('resultTitle').textContent = `${guaName}卦 · 爻动第${dong}`;
+        $('bianInline').classList.remove('visible');
+        state.bianCalculated = false;
+        const btn = $('btnShowBian');
+        btn.disabled = false;
+        btn.textContent = '推演变卦';
+        btn.onclick = function() { showBianGua(); };
+    }
+
+    function buildBaguaHTML(a, b, dongYao) {
+        const upper = TRIGRAMS[a] || ['━ ━','━ ━','━ ━'];
+        const lower = TRIGRAMS[b] || ['━ ━','━ ━','━ ━'];
+        const six = [lower[0], lower[1], lower[2], upper[0], upper[1], upper[2]];
+        let lines = '';
+        for (let i=5; i>=0; i--) {
+            const pos = i+1;
+            const isDong = (pos === dongYao);
+            const symbol = six[i];
+            let cls = 'line';
+            if (isDong) cls += ' dong';
+            lines += `<span class="${cls}"><span class="line-label">${pos}</span> ${symbol}</span>`;
+        }
+        const upperName = TRIGRAM_NAMES[a] || '?';
+        const lowerName = TRIGRAM_NAMES[b] || '?';
+        return `
+            <div class="bagua-lines">${lines}</div>
+            <div class="bagua-row">
+                <div class="bagua-col"><div style="font-size:22px;color:#6a5a42;">☰</div><div class="name">上卦 · ${upperName}</div></div>
+                <div class="bagua-col"><div style="font-size:22px;color:#6a5a42;">☷</div><div class="name">下卦 · ${lowerName}</div></div>
+            </div>
+            <div class="bagua-label"><strong>${state.guaName||''}卦</strong> · 动爻第${dongYao||0}</div>
+        `;
+    }
+
+    function showBianGua() {
+        if (state.bianCalculated) {
+            $('bianInline').classList.add('visible');
+            return;
+        }
+        const btn = $('btnShowBian');
+        btn.disabled = true;
+        btn.textContent = '推演中 ...';
+        setTimeout(() => {
+            const a = state.A_simp, b = state.B_simp, c = state.C_simp;
+            let newA = a, newB = b;
+            if (c === 1 || c === 6) newB = 9 - b;
+            if (c >= 2 && c <= 5) newA = 9 - a;
+            const bianName = GUA_MAP[newA]?.[newB] || '?';
+            const bianMeaning = GUA_MEANING[bianName] || '未知卦意';
+            state.bianGuaName = bianName;
+            state.bianGuaMeaning = bianMeaning;
+            state.bianA = newA;
+            state.bianB = newB;
+            state.bianCalculated = true;
+            $('bianGuaName').textContent = bianName + '卦';
+            $('bianGuaMeaning').textContent = bianMeaning;
+            $('bianBagua').innerHTML = buildBaguaHTML(newA, newB, 0);
+            $('bianSummary').textContent = `${bianMeaning}。`;
+            $('bianInline').classList.add('visible');
+            btn.disabled = true;
+            btn.textContent = '变卦已显';
+        }, 2000);
+    }
+
+    function resetAll() {
+        state = {
+            step:0, question:'', A:null,B:null,C:null,
+            A_simp:null,B_simp:null,C_simp:null,
+            guaName:'', guaMeaning:'', dongYao:null,
+            bianGuaName:'', bianGuaMeaning:'', bianCalculated:false,
+            bianA:null, bianB:null
+        };
+        $('inputQuestion').value = '';
+        $('inputA').value = '';
+        $('inputB').value = '';
+        $('inputC').value = '';
+        document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+        $('progressBar').style.width = '0%';
+        $('progressPct').textContent = '0%';
+        $('progressLogs').innerHTML = '<div class="log-line dim">· 起卦 ...</div>';
+        const btnNext = $('btnCalcNext');
+        btnNext.textContent = '计算中 ...';
+        btnNext.onclick = null;
+        btnNext.disabled = true;
+        $('btnCalcBack').disabled = true;
+        const btnBian = $('btnShowBian');
+        btnBian.textContent = '推演变卦';
+        btnBian.onclick = function() { showBianGua(); };
+        btnBian.disabled = false;
+        $('bianInline').classList.remove('visible');
+        goStep(0);
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const step = state.step;
+            if (step===1) submitQuestion();
+            else if (step===2) submitA();
+            else if (step===3) submitB();
+            else if (step===4) submitC();
+            else if (step===6) {
+                const btn = $('btnShowBian');
+                if (!btn.disabled) btn.click();
+            }
+        }
+        if (e.key === 'Escape') {
+            if (state.step === 6) resetAll();
+        }
+    });
+
+    goStep(0);
+    updateLimitHint();
+    console.log('天机不可泄漏');
+</script>
+</body>
+</html>
